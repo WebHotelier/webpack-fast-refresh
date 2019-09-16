@@ -1,4 +1,4 @@
-## 1.0.3 (Sep 16th, 2019)
+## 1.0.4 (Sep 16th, 2019)
 
 - Adds support for both `webpack@4` and `webpack@5`
 

@@ -1,11 +1,17 @@
 {
   "name": "@webhotelier/webpack-fast-refresh",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "index.js",
-  "description": "React Fast Refresh plugin and loader for webpack@5+",
+  "description": "React Fast Refresh plugin and loader for webpack",
   "author": "Apostolos Tsakpinis <apostolos@webhotelier.net>",
   "license": "MIT",
-  "repository": "git@github.com:webhotelier/webhotelier.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WebHotelier/webpack-fast-refresh.git"
+  },
+  "bugs": {
+    "url": "https://github.com/WebHotelier/webpack-fast-refresh/issues"
+  },
   "peerDependencies": {
     "react-refresh": "*",
     "webpack": "^4.x || >5.0.0-alpha.0"
