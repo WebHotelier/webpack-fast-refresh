@@ -1,6 +1,6 @@
 # webpack-fast-refresh
 
-React Fast Refresh plugin and loader for webpack@5+
+React Fast Refresh plugin and loader for webpack
 
 # Usage
 

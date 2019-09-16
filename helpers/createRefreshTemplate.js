@@ -1,4 +1,5 @@
 const webpack = require('webpack');
+const version = parseInt(webpack.version.split('.')[0]);
 
 const beforeModule = `
 var cleanup = window && window.__RefreshModule ? window.__RefreshModule(moduleId) : function() {};
@@ -8,17 +9,47 @@ const afterModule = `} finally {
   cleanup();
 }`;
 
-function createRefreshTemplate(source, renderContext) {
-  const { chunk } = renderContext;
+const EntryTest = /ReactRefreshEntry/;
 
-  if (chunk.contentHash.javascript === undefined) {
+function hasReactRefreshEntry(renderContext) {
+  if (version > 4) {
+    const { chunk, chunkGraph } = renderContext;
+
+    if (chunkGraph.getNumberOfEntryModules(chunk) === 0) {
+      return false;
+    }
+
+    for (let entryModule of chunkGraph.getChunkEntryModulesIterable(chunk)) {
+      if (EntryTest.test(entryModule.resource)) {
+        return true;
+      }
+    }
+
+    return false;
+  } else {
+    const chunk = renderContext;
+
+    if (!chunk.entryModule) {
+      return false;
+    }
+    if (!EntryTest.test(chunk.entryModule._identifier)) {
+      return false;
+    }
+  }
+}
+
+function createRefreshTemplate(source, renderContext) {
+  // Make sure ./ReactRefreshEntry is in the chunk's Entry Modules
+  if (!hasReactRefreshEntry(renderContext)) {
     return source;
   }
 
   const lines = source.split('\n');
 
   // Webpack generates this line whenever mainTemplate is called
-  const moduleInitializationLineNumber = lines.findIndex(line => line.startsWith('execOptions.factory.call'));
+  const moduleInitializationLineNumber = lines.findIndex(line =>
+    line.startsWith(version > 4 ? 'execOptions.factory.call' : 'modules[moduleId].call')
+  );
 
   return webpack.Template.asString([
     ...lines.slice(0, moduleInitializationLineNumber),
