@@ -15,27 +15,22 @@ function hasReactRefreshEntry(renderContext) {
   if (version > 4) {
     const { chunk, chunkGraph } = renderContext;
 
-    if (chunkGraph.getNumberOfEntryModules(chunk) === 0) {
-      return false;
-    }
-
-    for (let entryModule of chunkGraph.getChunkEntryModulesIterable(chunk)) {
-      if (EntryTest.test(entryModule.resource)) {
-        return true;
+    if (chunkGraph.getNumberOfEntryModules(chunk) > 0) {
+      for (let entryModule of chunkGraph.getChunkEntryModulesIterable(chunk)) {
+        if (EntryTest.test(entryModule.resource)) {
+          return true;
+        }
       }
     }
-
-    return false;
   } else {
     const chunk = renderContext;
 
-    if (!chunk.entryModule) {
-      return false;
-    }
-    if (!EntryTest.test(chunk.entryModule._identifier)) {
-      return false;
+    if (chunk.entryModule && EntryTest.test(chunk.entryModule._identifier)) {
+      return true;
     }
   }
+
+  return false;
 }
 
 function createRefreshTemplate(source, renderContext) {
