@@ -1,9 +1,9 @@
 const runtime = require('react-refresh/runtime');
 
-function enqueueUpdate() {
+function debounceRefresh() {
   let refreshTimeout = undefined;
 
-  function _execute() {
+  function _refresh() {
     if (refreshTimeout === undefined) {
       refreshTimeout = setTimeout(() => {
         refreshTimeout = undefined;
@@ -12,7 +12,7 @@ function enqueueUpdate() {
     }
   }
 
-  return _execute();
+  return _refresh();
 }
 
-module.exports = enqueueUpdate;
+module.exports = debounceRefresh;

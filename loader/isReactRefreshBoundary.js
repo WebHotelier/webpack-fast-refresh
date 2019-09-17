@@ -1,10 +1,8 @@
 const runtime = require('react-refresh/runtime');
 
-/**
- * This implementation is cherry-picked from Metro.
- * Ref: https://github.com/facebook/metro/blob/febdba2383113c88296c61e28e4ef6a7f4939fda/packages/metro/src/lib/polyfills/require.js#L748-L774
- */
-function isReactRefreshBoundary(moduleExports) {
+function isReactRefreshBoundary(module) {
+  const moduleExports = module.exports || module.__proto__.exports;
+
   if (runtime.isLikelyComponentType(moduleExports)) {
     return true;
   }
@@ -13,30 +11,19 @@ function isReactRefreshBoundary(moduleExports) {
   }
 
   let hasExports = false;
-  let areAllExportsComponents = true;
   for (const key in moduleExports) {
     hasExports = true;
     if (key === '__esModule') {
       continue;
     }
 
-    // Metro has unsafe getters. Webpack's getters on the other hand just return
-    // the named exports, so they are safe to call.
-    // Fixes components with named exports not getting recognized
-    // const desc = Object.getOwnPropertyDescriptor(moduleExports, key);
-    // if (desc && desc.get) {
-    //   // Don't invoke getters as they may have side effects.
-    //   return false;
-    // }
-
-    const exportValue = moduleExports[key];
-    if (!runtime.isLikelyComponentType(exportValue)) {
-      areAllExportsComponents = false;
-      break;
+    if (!runtime.isLikelyComponentType(moduleExports[key])) {
+      // Early out, we can't set a boundary in this module
+      return false;
     }
   }
 
-  return hasExports && areAllExportsComponents;
+  return hasExports;
 }
 
 module.exports = isReactRefreshBoundary;

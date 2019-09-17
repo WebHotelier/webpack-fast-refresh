@@ -1,15 +1,18 @@
 // HMR Error Recovery
 const inject = `
 const isReactRefreshBoundary = require('${require.resolve('./isReactRefreshBoundary')}');
-const enqueueUpdate = require('${require.resolve('./enqueueUpdate')}');
-if ( module.hot && isReactRefreshBoundary(module.__proto__.exports) ) {
+const debounceRefresh = require('${require.resolve('./debounceRefresh')}');
+const registerExportsForReactRefresh = require('${require.resolve('./registerExportsForReactRefresh')}');
+
+registerExportsForReactRefresh(module);
+if ( module.hot && isReactRefreshBoundary(module) ) {
   function hotErrorHandler(error) {
     console.warn('[HMR] Error Occurred!');
     console.error(error);
     require.cache[module.id].hot.accept(hotErrorHandler);
   }
   module.hot.accept(hotErrorHandler);
-  enqueueUpdate();
+  debounceRefresh();
 }
 `;
 

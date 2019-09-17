@@ -32,7 +32,7 @@ class ReactRefreshPlugin {
         // Inject refresh loader to React files
         if (/\.([jt]sx)$/.test(data.resource) && !/node_modules/.test(data.resource)) {
           data.loaders.unshift({
-            loader: require.resolve('./loader/RefreshHotLoader'),
+            loader: require.resolve('./loader'),
           });
         }
       });
