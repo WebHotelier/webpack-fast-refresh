@@ -1,10 +1,14 @@
 const webpack = require('webpack');
 const version = parseInt(webpack.version.split('.')[0]);
 
+/**
+ * Code to run before each module, sets up react-refresh.
+ */
 const beforeModule = `
-var cleanup = window && window.__RefreshModule ? window.__RefreshModule(moduleId) : function() {};
+var cleanup = window && window.$RefreshSetup$ ? window.$RefreshSetup$(module.i) : function() {};
 try {`;
 
+/** Code to run after each module, sets up react-refresh */
 const afterModule = `} finally {
   cleanup();
 }`;

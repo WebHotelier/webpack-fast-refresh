@@ -1,5 +1,13 @@
+/** @typedef {string | string[] | import('webpack').Entry} StaticEntry */
+/** @typedef {StaticEntry | import('webpack').EntryFunc} WebpackEntry */
+
+/**
+ * Injects an entry to the bundle for react-refresh.
+ * @param {WebpackEntry} [originalEntry] A Webpack entry object.
+ * @returns {WebpackEntry} An injected entry object.
+ */
 const injectRefreshEntry = originalEntry => {
-  const ReactRefreshEntry = require.resolve('./ReactRefreshEntry');
+  const ReactRefreshEntry = require.resolve('../runtime/ReactRefreshEntry');
 
   // Single string entry point
   if (typeof originalEntry === 'string') {
@@ -21,13 +29,13 @@ const injectRefreshEntry = originalEntry => {
   }
   // Dynamic entry points
   if (typeof originalEntry === 'function') {
-    return async (...args) => {
-      const resolvedEntry = await originalEntry(...args);
-      return injectRefreshEntry(resolvedEntry);
-    };
+    return (...args) =>
+      Promise.resolve(originalEntry(...args)).then(resolvedEntry =>
+        injectRefreshEntry(resolvedEntry)
+      );
   }
 
-  throw new Error('Failed to parse the webpack `entry` object!');
+  throw new Error('Failed to parse the Webpack `entry` object!');
 };
 
 module.exports = injectRefreshEntry;

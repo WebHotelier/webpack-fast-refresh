@@ -1,7 +1,7 @@
 {
   "name": "@webhotelier/webpack-fast-refresh",
-  "version": "1.0.5",
-  "main": "index.js",
+  "version": "1.0.6",
+  "main": "src/index.js",
   "description": "React Fast Refresh plugin and loader for webpack",
   "author": "Apostolos Tsakpinis <apostolos@webhotelier.net>",
   "license": "MIT",
