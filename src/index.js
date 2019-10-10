@@ -1,5 +1,8 @@
-const webpack = require('webpack');
-const version = parseInt(webpack.version.split('.')[0]);
+const {
+  ProvidePlugin,
+  JavascriptModulesPlugin,
+  NormalModule,
+} = require('webpack');
 const { createRefreshTemplate, injectRefreshEntry } = require('./helpers');
 const { runtimeUtils } = require('./runtime/globals');
 
@@ -30,26 +33,24 @@ class ReactRefreshPlugin {
     compiler.options.entry = injectRefreshEntry(compiler.options.entry);
 
     // Inject refresh utilities to Webpack global scope
-    const providePlugin = new webpack.ProvidePlugin({
+    const providePlugin = new ProvidePlugin({
       [runtimeUtils]: require.resolve('./runtime/utils'),
     });
     providePlugin.apply(compiler);
 
     compiler.hooks.normalModuleFactory.tap(this.constructor.name, nmf => {
       nmf.hooks.afterResolve.tap(this.constructor.name, resolveData => {
-        let data;
-        if (version > 4) {
-          if (!resolveData || !resolveData.createData) {
-            return;
-          }
-
-          data = resolveData.createData;
-        } else {
-          data = resolveData;
+        if (!resolveData || !resolveData.createData) {
+          return;
         }
 
+        const data = resolveData.createData;
+
         // Inject refresh loader to all React files
-        if (/\.([jt]sx)$/.test(data.resource) && !/node_modules/.test(data.resource)) {
+        if (
+          /\.([jt]sx)$/.test(data.resource) &&
+          !/node_modules/.test(data.resource)
+        ) {
           data.loaders.unshift({
             loader: require.resolve('./loader'),
           });
@@ -58,18 +59,20 @@ class ReactRefreshPlugin {
     });
 
     compiler.hooks.compilation.tap(this.constructor.name, compilation => {
-      compilation.mainTemplate.hooks.require.tap(this.constructor.name, createRefreshTemplate);
+      JavascriptModulesPlugin.getCompilationHooks(
+        compilation
+      ).renderRequire.tap(this.constructor.name, createRefreshTemplate);
 
-      if (version === 4) {
-        // TODO: Support this in webpack@5 as well
-        compilation.hooks.normalModuleLoader.tap(this.constructor.name, context => {
+      NormalModule.getCompilationHooks(compilation).loader.tap(
+        this.constructor.name,
+        context => {
           if (!context.hot) {
             throw Error(
               'Hot Module Replacement (HMR) is not enabled! React-Refresh requires HMR to function properly.'
             );
           }
-        });
-      }
+        }
+      );
     });
   }
 }

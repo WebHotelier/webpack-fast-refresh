@@ -1,5 +1,4 @@
-const webpack = require('webpack');
-const version = parseInt(webpack.version.split('.')[0]);
+const { Template } = require('webpack');
 
 /**
  * Code to run before each module, sets up react-refresh.
@@ -16,21 +15,13 @@ const afterModule = `} finally {
 const EntryTest = /ReactRefreshEntry/;
 
 function hasReactRefreshEntry(renderContext) {
-  if (version > 4) {
-    const { chunk, chunkGraph } = renderContext;
+  const { chunk, chunkGraph } = renderContext;
 
-    if (chunkGraph.getNumberOfEntryModules(chunk) > 0) {
-      for (let entryModule of chunkGraph.getChunkEntryModulesIterable(chunk)) {
-        if (EntryTest.test(entryModule.resource)) {
-          return true;
-        }
+  if (chunkGraph.getNumberOfEntryModules(chunk) > 0) {
+    for (let entryModule of chunkGraph.getChunkEntryModulesIterable(chunk)) {
+      if (EntryTest.test(entryModule.resource)) {
+        return true;
       }
-    }
-  } else {
-    const chunk = renderContext;
-
-    if (chunk.entryModule && EntryTest.test(chunk.entryModule._identifier)) {
-      return true;
     }
   }
 
@@ -47,13 +38,13 @@ function createRefreshTemplate(source, renderContext) {
 
   // Webpack generates this line whenever mainTemplate is called
   const moduleInitializationLineNumber = lines.findIndex(line =>
-    line.startsWith(version > 4 ? 'execOptions.factory.call' : 'modules[moduleId].call')
+    line.startsWith('execOptions.factory.call')
   );
 
-  return webpack.Template.asString([
+  return Template.asString([
     ...lines.slice(0, moduleInitializationLineNumber),
     beforeModule,
-    webpack.Template.indent(lines[moduleInitializationLineNumber]),
+    Template.indent(lines[moduleInitializationLineNumber]),
     afterModule,
     ...lines.slice(moduleInitializationLineNumber + 1, lines.length),
   ]);
