@@ -1,8 +1,4 @@
-const {
-  ProvidePlugin,
-  JavascriptModulesPlugin,
-  NormalModule,
-} = require('webpack');
+const { ProvidePlugin, JavascriptModulesPlugin } = require('webpack');
 const { createRefreshTemplate, injectRefreshEntry } = require('./helpers');
 const { runtimeUtils } = require('./runtime/globals');
 
@@ -62,17 +58,6 @@ class ReactRefreshPlugin {
       JavascriptModulesPlugin.getCompilationHooks(
         compilation
       ).renderRequire.tap(this.constructor.name, createRefreshTemplate);
-
-      NormalModule.getCompilationHooks(compilation).loader.tap(
-        this.constructor.name,
-        context => {
-          if (!context.hot) {
-            throw Error(
-              'Hot Module Replacement (HMR) is not enabled! React-Refresh requires HMR to function properly.'
-            );
-          }
-        }
-      );
     });
   }
 }
