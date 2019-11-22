@@ -1,4 +1,4 @@
-const { ProvidePlugin, JavascriptModulesPlugin } = require('webpack');
+const { ProvidePlugin, javascript } = require('webpack');
 const { createRefreshTemplate, injectRefreshEntry } = require('./helpers');
 const { runtimeUtils } = require('./runtime/globals');
 
@@ -55,7 +55,7 @@ class ReactRefreshPlugin {
     });
 
     compiler.hooks.compilation.tap(this.constructor.name, compilation => {
-      JavascriptModulesPlugin.getCompilationHooks(
+      javascript.JavascriptModulesPlugin.getCompilationHooks(
         compilation
       ).renderRequire.tap(this.constructor.name, createRefreshTemplate);
     });
