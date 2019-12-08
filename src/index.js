@@ -1,17 +1,8 @@
-const { ProvidePlugin, javascript } = require('webpack');
+const webpack = require('webpack');
 const { createRefreshTemplate, injectRefreshEntry } = require('./helpers');
-const { runtimeUtils } = require('./runtime/globals');
+const { refreshUtils } = require('./runtime/globals');
 
 class ReactRefreshPlugin {
-  /**
-   * @param {*} [options] Options for react-refresh-plugin.
-   * @param {boolean} [options.forceEnable] A flag to enable the plugin forcefully.
-   * @returns {void}
-   */
-  constructor(options) {
-    this.options = options || {};
-  }
-
   /**
    * Applies the plugin
    * @param {import('webpack').Compiler} compiler A webpack compiler object.
@@ -29,8 +20,8 @@ class ReactRefreshPlugin {
     compiler.options.entry = injectRefreshEntry(compiler.options.entry);
 
     // Inject refresh utilities to Webpack global scope
-    const providePlugin = new ProvidePlugin({
-      [runtimeUtils]: require.resolve('./runtime/utils'),
+    const providePlugin = new webpack.ProvidePlugin({
+      [refreshUtils]: require.resolve('./runtime/utils'),
     });
     providePlugin.apply(compiler);
 
@@ -49,13 +40,14 @@ class ReactRefreshPlugin {
         ) {
           data.loaders.unshift({
             loader: require.resolve('./loader'),
+            options: undefined,
           });
         }
       });
     });
 
     compiler.hooks.compilation.tap(this.constructor.name, compilation => {
-      javascript.JavascriptModulesPlugin.getCompilationHooks(
+      webpack.javascript.JavascriptModulesPlugin.getCompilationHooks(
         compilation
       ).renderRequire.tap(this.constructor.name, createRefreshTemplate);
     });

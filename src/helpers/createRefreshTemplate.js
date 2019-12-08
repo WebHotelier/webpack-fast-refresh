@@ -2,9 +2,18 @@ const { Template } = require('webpack');
 
 /**
  * Code to run before each module, sets up react-refresh.
+ *
+ * `module.i` is injected by Webpack and should always exist.
+ *
+ * [Ref](https://github.com/webpack/webpack/blob/master/lib/MainTemplate.js#L233)
  */
 const beforeModule = `
-var cleanup = window && window.$RefreshSetup$ ? window.$RefreshSetup$(module.i) : function() {};
+let cleanup = function NoOp() {};
+
+if (window && window.$RefreshSetup$) {
+  cleanup = window.$RefreshSetup$(module.i);
+}
+
 try {`;
 
 /** Code to run after each module, sets up react-refresh */
@@ -28,6 +37,12 @@ function hasReactRefreshEntry(renderContext) {
   return false;
 }
 
+/**
+ * Creates a module wrapped by a refresh template.
+ * @param {string} source The source code of a module.
+ * @param {object} renderContext Webpack renderContext.
+ * @returns {string} A refresh-wrapped module.
+ */
 function createRefreshTemplate(source, renderContext) {
   // Make sure ./ReactRefreshEntry is in the chunk's Entry Modules
   if (!hasReactRefreshEntry(renderContext)) {
@@ -36,7 +51,7 @@ function createRefreshTemplate(source, renderContext) {
 
   const lines = source.split('\n');
 
-  // Webpack generates this line whenever mainTemplate is called
+  // Webpack generates this line whenever the mainTemplate is called
   const moduleInitializationLineNumber = lines.findIndex(line =>
     line.startsWith('execOptions.factory.call')
   );

@@ -14,8 +14,20 @@ module.exports = function() {
   $RefreshUtils$.registerExportsForReactRefresh(module);
 
   if (module.hot && $RefreshUtils$.isReactRefreshBoundary(module)) {
+    module.hot.dispose($RefreshUtils$.createHotDisposeCallback(module));
     module.hot.accept($RefreshUtils$.createHotErrorHandler(module.id));
-    $RefreshUtils$.performFullRefreshIfNeeded();
-    $RefreshUtils$.enqueueUpdate();
+
+    if (!!module.hot.data && !!Object.keys(module.hot.data).length) {
+      if (
+        !module.hot.data.module ||
+        $RefreshUtils$.shouldInvalidateReactRefreshBoundary(
+          module.hot.data.module,
+          module
+        )
+      ) {
+        window.location.reload();
+      }
+      $RefreshUtils$.enqueueUpdate();
+    }
   }
 };

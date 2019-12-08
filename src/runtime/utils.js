@@ -10,31 +10,90 @@ function getModuleExports(module) {
 }
 
 /**
- * Creates self-recovering an error handler for webpack hot.
- * @returns {function(string): void} A webpack hot error handler.
+ * Calculates the signature of a React refresh boundary.
+ * If this signature changes, it's unsafe to accept the boundary.
+ *
+ * This implementation is based on the one in [Metro](https://github.com/facebook/metro/blob/907d6af22ac6ebe58572be418e9253a90665ecbd/packages/metro/src/lib/polyfills/require.js#L795-L816).
  */
-function createHotErrorHandler(moduleId) {
-  return function hotErrorHandler() {
-    require.cache[moduleId].hot.accept(hotErrorHandler);
-  };
+function getReactRefreshBoundarySignature(moduleExports) {
+  const signature = [];
+  signature.push(Refresh.getFamilyByType(moduleExports));
+
+  if (moduleExports == null || typeof moduleExports !== 'object') {
+    // Exit if we can't iterate over exports.
+    return signature;
+  }
+
+  for (const key in moduleExports) {
+    if (key === '__esModule') {
+      continue;
+    }
+
+    signature.push(key);
+    signature.push(Refresh.getFamilyByType(moduleExports[key]));
+  }
+
+  return signature;
 }
 
 /**
- * Performs a delayed React refresh.
- * @returns {function(): void} A debounced React refresh function.
+ * Creates conditional full refresh dispose handler for Webpack hot.
+ * @param {*} module A Webpack module object.
+ * @returns {hotDisposeCallback} A webpack hot dispose callback.
  */
-function debounceUpdate() {
+function createHotDisposeCallback(module) {
+  /**
+   * A callback to performs a full refresh if React has unrecoverable errors,
+   * and also caches the to-be-disposed module.
+   * @param {*} data A hot module data object from Webpack HMR.
+   * @returns {void}
+   */
+  function hotDisposeCallback(data) {
+    if (Refresh.hasUnrecoverableErrors()) {
+      window.location.reload();
+    }
+
+    // We have to mutate the data object to get data registered and cached
+    data.module = module;
+  }
+
+  return hotDisposeCallback;
+}
+
+/**
+ * Creates self-recovering an error handler for webpack hot.
+ * @param {string} moduleId A unique ID for a Webpack module.
+ * @returns {selfAcceptingHotErrorHandler} A self-accepting webpack hot error handler.
+ */
+function createHotErrorHandler(moduleId) {
+  /**
+   * An error handler to allow self-recovering behaviours.
+   * @param {Error} error An error occurred during evaluation of a module.
+   * @returns {void}
+   */
+  function selfAcceptingHotErrorHandler(error) {
+    require.cache[moduleId].hot.accept(hotErrorHandler);
+  }
+
+  return selfAcceptingHotErrorHandler;
+}
+
+/**
+ * Creates a helper that performs a delayed React refresh.
+ * @returns {enqueueUpdate} A debounced React refresh function.
+ */
+function createDebounceUpdate() {
   /**
    * A cached setTimeout handler.
    * @type {number | void}
    */
-  var refreshTimeout = undefined;
+  let refreshTimeout = undefined;
 
   /**
-   * Caches the refresh timer.
+   * Performs react refresh on a delay.
    * @returns {void}
    */
-  function _refresh() {
+  function enqueueUpdate() {
     if (refreshTimeout === undefined) {
       refreshTimeout = setTimeout(function() {
         refreshTimeout = undefined;
@@ -43,7 +102,7 @@ function debounceUpdate() {
     }
   }
 
-  return _refresh;
+  return enqueueUpdate;
 }
 
 /**
@@ -59,12 +118,18 @@ function isReactRefreshBoundary(module) {
   if (Refresh.isLikelyComponentType(moduleExports)) {
     return true;
   }
-  if (moduleExports === null || typeof moduleExports !== 'object') {
+  if (
+    moduleExports === undefined ||
+    moduleExports === null ||
+    typeof moduleExports !== 'object'
+  ) {
+    // Exit if we can't iterate over exports.
     return false;
   }
 
-  var hasExports = false;
-  for (var key in moduleExports) {
+  let hasExports = false;
+  let areAllExportsComponents = true;
+  for (const key in moduleExports) {
     hasExports = true;
 
     // This is the ES Module indicator flag set by Webpack
@@ -76,23 +141,13 @@ function isReactRefreshBoundary(module) {
     // as Webpack manually assigns harmony exports to getters,
     // without any side-effects attached.
     // Ref: https://github.com/webpack/webpack/blob/b93048643fe74de2a6931755911da1212df55897/lib/MainTemplate.js#L281
-    var exportValue = moduleExports[key];
+    const exportValue = moduleExports[key];
     if (!Refresh.isLikelyComponentType(exportValue)) {
-      return false;
+      areAllExportsComponents = false;
     }
   }
 
-  return hasExports;
-}
-
-/**
- * Performs a full refresh if React has unrecoverable errors.
- * @returns {void}
- */
-function performFullRefreshIfNeeded() {
-  if (Refresh.hasUnrecoverableErrors()) {
-    window.location.reload(true);
-  }
+  return hasExports && areAllExportsComponents;
 }
 
 /**
@@ -103,37 +158,68 @@ function performFullRefreshIfNeeded() {
  * @returns {void}
  */
 function registerExportsForReactRefresh(module) {
-  var moduleExports = getModuleExports(module);
-  var moduleId = module.id;
+  const moduleExports = getModuleExports(module);
+  const moduleId = module.id;
 
   if (Refresh.isLikelyComponentType(moduleExports)) {
     // Register module.exports if it is likely a component
     Refresh.register(moduleExports, moduleId + ' %exports%');
   }
 
-  if (moduleExports === null || typeof moduleExports !== 'object') {
+  if (
+    moduleExports === undefined ||
+    moduleExports === null ||
+    typeof moduleExports !== 'object'
+  ) {
     // Exit if we can't iterate over the exports.
     return;
   }
 
-  for (var key in moduleExports) {
+  for (const key in moduleExports) {
     // Skip registering the Webpack ES Module indicator
     if (key === '__esModule') {
       continue;
     }
 
-    var exportValue = moduleExports[key];
+    const exportValue = moduleExports[key];
     if (Refresh.isLikelyComponentType(exportValue)) {
-      var typeID = moduleId + ' %exports% ' + key;
+      const typeID = moduleId + ' %exports% ' + key;
       Refresh.register(exportValue, typeID);
     }
   }
 }
 
-module.exports = {
+/**
+ * Compares previous and next module objects to check for mutated boundaries.
+ *
+ * This implementation is based on the one in [Metro](https://github.com/facebook/metro/blob/907d6af22ac6ebe58572be418e9253a90665ecbd/packages/metro/src/lib/polyfills/require.js#L776-L792).
+ */
+function shouldInvalidateReactRefreshBoundary(prevModule, nextModule) {
+  const prevSignature = getReactRefreshBoundarySignature(
+    getModuleExports(prevModule)
+  );
+  const nextSignature = getReactRefreshBoundarySignature(
+    getModuleExports(nextModule)
+  );
+
+  if (prevSignature.length !== nextSignature.length) {
+    return true;
+  }
+
+  for (let i = 0; i < nextSignature.length; i += 1) {
+    if (prevSignature[i] !== nextSignature[i]) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+module.exports = Object.freeze({
+  createHotDisposeCallback,
   createHotErrorHandler,
-  enqueueUpdate: debounceUpdate(),
+  enqueueUpdate: createDebounceUpdate(),
   isReactRefreshBoundary,
-  performFullRefreshIfNeeded,
+  shouldInvalidateReactRefreshBoundary,
   registerExportsForReactRefresh,
-};
+});
