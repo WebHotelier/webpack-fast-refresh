@@ -68,14 +68,11 @@ function createHotDisposeCallback(module) {
 function createHotErrorHandler(moduleId) {
   /**
    * An error handler to allow self-recovering behaviours.
-   * @param {Error} error An error occurred during evaluation of a module.
    * @returns {void}
    */
-  function selfAcceptingHotErrorHandler(error) {
+  return function hotErrorHandler() {
     require.cache[moduleId].hot.accept(hotErrorHandler);
-  }
-
-  return selfAcceptingHotErrorHandler;
+  };
 }
 
 /**
@@ -128,7 +125,6 @@ function isReactRefreshBoundary(module) {
   }
 
   let hasExports = false;
-  let areAllExportsComponents = true;
   for (const key in moduleExports) {
     hasExports = true;
 
@@ -143,11 +139,11 @@ function isReactRefreshBoundary(module) {
     // Ref: https://github.com/webpack/webpack/blob/b93048643fe74de2a6931755911da1212df55897/lib/MainTemplate.js#L281
     const exportValue = moduleExports[key];
     if (!Refresh.isLikelyComponentType(exportValue)) {
-      areAllExportsComponents = false;
+      return false;
     }
   }
 
-  return hasExports && areAllExportsComponents;
+  return hasExports;
 }
 
 /**
