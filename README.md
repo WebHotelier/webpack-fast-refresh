@@ -2,6 +2,8 @@
 
 React Fast Refresh plugin and loader for webpack@5+
 
+We recommend webpack@4 users to use https://github.com/pmmmwh/react-refresh-webpack-plugin
+
 # Usage
 
 ## 1. Install both `react-refresh` and `webpack-fast-refresh` in your project
