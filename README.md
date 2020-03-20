@@ -1,8 +1,8 @@
 # webpack-fast-refresh
 
-React Fast Refresh plugin and loader for webpack@5+
+React Fast Refresh plugin and loader for webpack@5+ and babel@7.9.0+
 
-We recommend webpack@4 users to use https://github.com/pmmmwh/react-refresh-webpack-plugin
+webpack@4 users should try https://github.com/pmmmwh/react-refresh-webpack-plugin
 
 # Usage
 
@@ -27,6 +27,7 @@ config.plugins.unshift(new ReactRefreshPlugin());
 
 ```json
 {
+  "presets": [["@babel/preset-react", { "runtime": "automatic" }]],
   "plugins": ["react-refresh/babel"]
 }
 ```

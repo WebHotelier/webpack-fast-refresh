@@ -1,13 +1,15 @@
 const { Template } = require('webpack');
 const { refreshUtils } = require('./runtime/globals');
 const RefreshModuleRuntime = require('./runtime/RefreshModuleRuntime');
-const RefreshModuleRuntimeString = Template.getFunctionContent(RefreshModuleRuntime)
+const RefreshModuleRuntimeString = Template.getFunctionContent(
+  RefreshModuleRuntime
+)
   .trim()
   .replace(/^ {2}/gm, '')
   .replace(/\$RefreshUtils\$/g, refreshUtils);
 
 /** A token to match code statements similar to a React import. */
-const reactModule = /['"]react['"]/;
+const reactModule = /jsxDEV/;
 
 /**
  * A simple Webpack loader to inject react-refresh HMR code into modules.
@@ -24,7 +26,9 @@ function RefreshHotLoader(source, inputSourceMap) {
   this.callback(
     null,
     // Only apply transform if the source code contains a React import
-    reactModule.test(source) ? source + '\n\n' + RefreshModuleRuntimeString : source,
+    reactModule.test(source)
+      ? source + '\n\n' + RefreshModuleRuntimeString
+      : source,
     inputSourceMap
   );
 }
