@@ -17,7 +17,8 @@ class ErrorOverlayPlugin {
     }
 
     const devServerEnabled = !!compiler.options.devServer;
-    const usingSocket = typeof compiler.options.devServer.socket === 'string';
+    const usingSocket =
+      devServerEnabled && typeof compiler.options.devServer.socket === 'string';
 
     /** @type { SockOptions } */
     const sockOptions = {};
