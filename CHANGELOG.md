@@ -1,3 +1,8 @@
+## 5.0.3 (July 28th, 2020)
+
+- Sync with latest `@next/react-refresh-utils`
+- Add license to files copied from @vercel/next.js
+
 ## 5.0.0 (May 10th, 2020)
 
 We no longer want to assume anything about your webpack configuration (e.g. file extensions for your React components). We also want to use as little as possible of webpack's internal API.

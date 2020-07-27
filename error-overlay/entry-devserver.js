@@ -1,3 +1,4 @@
+//@ts-check
 const querystring = require('querystring');
 const url = require('url');
 const SockJS = require('sockjs-client');

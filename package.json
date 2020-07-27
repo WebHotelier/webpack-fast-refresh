@@ -1,6 +1,6 @@
 {
   "name": "@webhotelier/webpack-fast-refresh",
-  "version": "5.0.1",
+  "version": "5.0.3",
   "main": "index.js",
   "description": "React Fast Refresh plugin and loader for webpack v5+",
   "author": "Apostolos Tsakpinis <apostolos@webhotelier.net>",
@@ -18,14 +18,14 @@
     "sockjs-client": "^1.4.0"
   },
   "devDependencies": {
-    "@types/node": "13.13.5",
-    "react-refresh": "^0.8.2",
+    "@types/node": "14.0.26",
     "prettier": "2.0.5",
-    "webpack": "^5.0.0-beta.15"
+    "react-refresh": "^0.8.3",
+    "webpack": "^5.0.0-beta.22"
   },
   "peerDependencies": {
-    "react-refresh": "^0.8.2",
-    "webpack": "^5.0.0-beta.15"
+    "react-refresh": "^0.8.3",
+    "webpack": "^5.0.0-beta.22"
   },
   "scripts": {
     "format": "prettier --write \"**/*.js\""
