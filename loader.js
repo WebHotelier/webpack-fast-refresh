@@ -38,7 +38,11 @@ function RefreshModuleRuntime() {
     '$RefreshHelpers$' in self
   ) {
     var currentExports = module.__proto__.exports;
-    var prevExports = module.hot.data?.prevExports ?? null;
+    var prevExports = null;
+
+    if (module.hot.data != null && module.hot.data.prevExports != null) {
+      prevExports = module.hot.data.prevExports;
+    }
 
     // This cannot happen in MainTemplate because the exports mismatch between
     // templating and execution.

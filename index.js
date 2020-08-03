@@ -65,7 +65,7 @@ class ReactRefreshRuntimeModule extends RuntimeModule {
 
 class ReactFreshWebpackPlugin {
   apply(compiler) {
-    const webpackMajorVersion = parseInt(version ?? '', 10);
+    const webpackMajorVersion = parseInt(version != null ? version : '', 10);
 
     if (webpackMajorVersion < 5) {
       throw new Error(
