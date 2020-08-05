@@ -2,7 +2,9 @@
 
 React Fast Refresh for `webpack@5+` and `babel@7.9+`
 
-webpack@4 users should try https://github.com/pmmmwh/react-refresh-webpack-plugin
+### **_IMPORTANT NOTE_**
+
+**This repository is to be considered _EXPERIMENTAL_. For most use cases we recommend using the officially endorsed webpack plugin available at [pmmmwh/react-refresh-webpack-plugin](https://github.com/pmmmwh/react-refresh-webpack-plugin).**
 
 # Usage
 
@@ -162,11 +164,13 @@ if (app.get('env') === 'development') {
 
 # Common Issues
 
+## html-webpack-plugin
+
+This plugin is not compatible with `html-webpack-plugin` at the moment.
+
 ## Production problems
 
-The above plugins/loader/etc are not checking if running in production builds.
-
-Make sure you add the correct checks to only include them in development builds.
+The above plugin & loader DO NOT check if they are running in production builds and do not automatically disable themselves. Make sure you add the correct checks to only include them in development builds.
 
 ## Still having trouble configuring everything?
 
