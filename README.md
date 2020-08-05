@@ -172,12 +172,6 @@ This plugin is not compatible with `html-webpack-plugin` at the moment.
 
 The above plugin & loader DO NOT check if they are running in production builds and do not automatically disable themselves. Make sure you add the correct checks to only include them in development builds.
 
-## Still having trouble configuring everything?
-
-Real-world example using the plugin:
-
-https://github.com/LWJGL/lwjgl3-www/blob/master/webpack.config.cjs
-
 # References
 
 - [@next/react-refresh-utils](https://github.com/zeit/next.js/tree/canary/packages/react-refresh-utils)
