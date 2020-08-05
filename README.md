@@ -36,70 +36,38 @@ config.plugins.unshift(new ReactRefreshPlugin());
 
 Depending on how you have configured your entry, change it similarly to the following examples:
 
-```js
-// if it looks like this ("./index.js" is just an example, can be any file or path)
-config.entry = './index.js'; // or
-config.entry = ['./index.js'];
-// change it to this:
-config.entry = ['@webhotelier/webpack-fast-refresh/runtime.js', './index.js'];
+```diff
+- config.entry = './index.js'; // or
+- config.entry = ['./index.js'];
++ config.entry = ['@webhotelier/webpack-fast-refresh/runtime.js', './index.js'];
 
-// if it looks like this
-config.entry = {
-  import: './index.js',
-}; // or
-config.entry = {
-  import: ['./index.js'],
-};
-// change it to this:
-config.entry = {
-  import: ['@webhotelier/webpack-fast-refresh/runtime.js', './index.js'],
-};
+- config.entry = {
+-   import: './index.js', // or
+-   import: ['./index.js'],
+- };
++ config.entry = {
++   import: ['@webhotelier/webpack-fast-refresh/runtime.js', './index.js'],
++ };
 
-// named entry points are also supported ("main" is just an example, can be any entry name)
-config.main.entry = './index.js'; // or
-config.main.entry = ['./index.js'];
-// change to:
-config.main.entry = [
-  '@webhotelier/webpack-fast-refresh/runtime.js',
-  './index.js',
-];
+- config.main.entry = './index.js'; // or
+- config.main.entry = ['./index.js'];
++ config.main.entry = [
++   '@webhotelier/webpack-fast-refresh/runtime.js',
++   './index.js',
++ ];
 
-// Examples of object-based config:
-// change:
 {
   "entry": {
-    "main": "./index.js"
-  }
-}
-
-// to:
-{
-  "entry": {
-    "main": ["@webhotelier/webpack-fast-refresh/runtime.js", "./index.js"]
+-     "main": "./index.js" // or
+-     "main": ["./index.js"]
++     "main": ["@webhotelier/webpack-fast-refresh/runtime.js", "./index.js"]
   }
 }
 ```
 
 ### c) Place the loader in your rule matching React files:
 
-Let's say you have the following rule:
-
-```js
-{
-  "rules": [
-    {
-      "test": /\.jsx$/,
-      "use": [
-        { "loader": "babel-loader", "options": { "cacheDirectory": true } }
-      ]
-    }
-  ]
-}
-```
-
-Change to:
-
-```json
+```diff
 {
   "module": {
     "rules": [
@@ -107,7 +75,7 @@ Change to:
         "test": /\.jsx$/,
         "use": [
           { "loader": "babel-loader", "options": { "cacheDirectory": true } },
-          { "loader": "@webhotelier/webpack-fast-refresh/loader.js" }
++          { "loader": "@webhotelier/webpack-fast-refresh/loader.js" }
         ]
       }
     ]
@@ -126,10 +94,10 @@ config.module.rules[0].use.push('@webhotelier/webpack-fast-refresh/loader.js');
 
 Add react-refresh/babel to your babelrc:
 
-```json
+```diff
 {
   "presets": [["@babel/preset-react", { "runtime": "automatic" }]],
-  "plugins": ["react-refresh/babel"]
++  "plugins": ["react-refresh/babel"]
 }
 ```
 
